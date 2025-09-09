@@ -1,0 +1,11 @@
+{
+  "id": "A_RANDOM_JOB_IDENTIFIER",
+  "input": {
+    "model" : "RealVisXL_V5.0_fp16.safetensors",
+    "positivePrompt" : "A cyberpunk cat sitting on a neon sign",
+    "negativePrompt" : "",
+    "steps" : 1,
+    "guidance" : 5,
+    "quantity" : 1
+    }
+}
