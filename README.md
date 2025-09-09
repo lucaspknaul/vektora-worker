@@ -1,4 +1,4 @@
-# serverless-comfyui-worker
+# vektora-worker
 
 
 Custos de execução de serverless-comfyui-worker:
@@ -8,4 +8,5 @@ Custos de execução de serverless-comfyui-worker:
 - comfyui-worker GPU price: $0.032
 
 comfyui-worker está muito caro por precisar inicializar todo o comfyui a cada restart.
-Iniciando desenvolvimento do meu próprio backend diretamente em python.# vektora-worker
+Iniciando desenvolvimento do meu próprio backend diretamente em python.# vektora-worker.
+
