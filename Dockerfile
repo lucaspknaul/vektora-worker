@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.9.0-cudnn-runtime-ubuntu24.04
+FROM runpod/base:0.7.0-noble-cuda1290
 
 # Update image and install required packages
 RUN apt-get update && apt-get install -y python3 python3-venv python3-pip git && \
@@ -14,7 +14,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --upgrade pip
 
 # Install dependencies inside the virtual environment
-RUN pip install --no-cache-dir runpod
+RUN pip install --no-cache-dir runpod hf_transfer
 RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu129
 RUN pip install --no-cache-dir diffusers transformers accelerate safetensors xformers
 

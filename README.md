@@ -1,17 +1,10 @@
 # vektora-worker
 
-# Idéia
+Rodando em ~4s.
 
-Custos de execução de serverless-comfyui-worker:
-- comfyui-worker images: 1
-- comfyui-worker execution time: 93s
-- comfyui-worker serverless price: $0.032
-- comfyui-worker GPU price: $0.032
+# Possível Otimização
 
-comfyui-worker está muito caro por precisar inicializar todo o comfyui a cada restart.
-
-Iniciando desenvolvimento do meu próprio backend diretamente em python.
-
+Usar o vektora manager para baixar modelos direto do hugginface no network-volume e apontar worker para network volume.
 
 # Desenvolvimento local
 
@@ -35,12 +28,12 @@ python handler.py
 
 ## Build
 ```bash
-sudo docker build --platform linux/amd64 -t lucaspknaul/vektora-worker:v0.0.1 .
+sudo docker build --platform linux/amd64 -t lucaspknaul/vektora-worker:v0.1.0 .
 ```
 
 ## Run locally
 ```bash
-sudo docker run -it lucaspknaul/vektora-worker:v0.0.1
+sudo docker run -it lucaspknaul/vektora-worker:v0.1.0
 ```
 
 ## Push
@@ -49,5 +42,5 @@ sudo docker run -it lucaspknaul/vektora-worker:v0.0.1
 sudo docker login
 
 # Push the image
-sudo docker push lucaspknaul/vektora-worker:v0.0.1
+sudo docker push lucaspknaul/vektora-worker:v0.1.0
 ```

@@ -1,14 +1,17 @@
-
+import io
+import base64
 import os
 import random
 import runpod
 import time
 from datetime import datetime
 
-# mock functions for development
+## mock functions for development
+
+# def generate_initial_seed():
+#     return random.randint(0, 2**32 - 1)
+
 # def create_seeds(initial_seed, quantity):
-#     if initial_seed is None:
-#         initial_seed = random.randint(0, 2**32 - 1)
 #     return [initial_seed + i for i in range(quantity)]
 
 # def load_model(model):
@@ -27,27 +30,37 @@ from datetime import datetime
 #     print(result)
 #     return result
     
-# real functions for serverless run
+## real functions for serverless run
 
 import torch
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionXLPipeline
+
+def generate_initial_seed():
+    return int(torch.randint(0, 2**32 - 1, (1,)).item())
 
 def create_seeds(initial_seed, quantity):
-    if initial_seed is None:
-        initial_seed = int(torch.randint(0, 2**32 - 1, (1,)).item())
     return [initial_seed + i for i in range(quantity)]
 
 def load_model(model):
     global pipe
-    if pipe is None:
-        model_path = "/workspace/models/checkpoints/" + model
+    model_path = os.path.join("/runpod-volume/models/checkpoints", model)
+
+    if pipe is None or getattr(pipe, "_model_path", None) != model_path:
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Modelo não encontrado em {model_path}")
-        pipe = StableDiffusionPipeline.from_pretrained(
+
+        new_pipe = StableDiffusionXLPipeline.from_single_file(
             model_path,
-            torch_dtype=torch.float16
+            torch_dtype=torch.float16,
         ).to("cuda")
-        pipe.enable_xformers_memory_efficient_attention()
+
+        if hasattr(new_pipe, "enable_xformers_memory_efficient_attention"):
+            new_pipe.enable_xformers_memory_efficient_attention()
+
+        new_pipe.set_progress_bar_config(disable=True)
+        new_pipe._model_path = model_path  # salva o path carregado
+        pipe = new_pipe
+
     return pipe
 
 def generate_images(
@@ -56,7 +69,7 @@ def generate_images(
         width, height, quantity,
         steps, guidance):
     generators = [torch.Generator("cuda").manual_seed(s) for s in seeds]
-    result = pipeline(
+    return pipeline(
         positive_prompt, 
         negative_prompt=negative_prompt,
         width=width,
@@ -66,6 +79,13 @@ def generate_images(
         guidance_scale=guidance,
         generator=generators,
     )
+
+
+# Converte uma única imagem PIL para Base64
+def image_to_base64(img):
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")  # ou "JPEG"
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
 
 def handler(job):
     # register initial executions time
@@ -82,7 +102,7 @@ def handler(job):
     quantity = job_input.get("quantity", 1)
     steps = job_input.get("steps", 11)
     guidance = job_input.get("guidance", 5)
-    seed = job_input.get("seed")
+    seed = job_input.get("seed", generate_initial_seed())
 
     # generate images
     seeds = create_seeds(seed, quantity)
@@ -96,6 +116,7 @@ def handler(job):
 
     # extract images
     images = result.images
+    images_base64 = [image_to_base64(img) for img in result.images]
 
     # register initial executions time
     job_end_time_ns = time.time_ns()
@@ -125,9 +146,11 @@ def handler(job):
                 "seed": seed,
                 "image": image,
             }
-            for seed, image in zip(seeds, images)
+            for seed, image in zip(seeds, images_base64)
         ]
     }
+
+os.environ["HF_HOME"] = "/runpod-volume/huggingface"
 
 pipe = None
 

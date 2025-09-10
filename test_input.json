@@ -4,8 +4,8 @@
     "model" : "RealVisXL_V5.0_fp16.safetensors",
     "positivePrompt" : "A cyberpunk cat sitting on a neon sign",
     "negativePrompt" : "",
-    "steps" : 1,
-    "guidance" : 5,
+    "steps" : 11,
+    "guidance" : 6,
     "quantity" : 1
     }
 }
